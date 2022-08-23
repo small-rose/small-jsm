@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.ArticleRankMapper">
+    
+    <resultMap type="ArticleRank" id="ArticleRankResult">
+        <result property="id"    column="id"    />
+        <result property="authorAvatar"    column="author_avatar"    />
+        <result property="authorNickname"    column="author_nickname"    />
+        <result property="rankDate"    column="rank_date"    />
+        <result property="rankNo"    column="rank_no"    />
+        <result property="title"    column="title"    />
+        <result property="authorFp"    column="author_fp"    />
+        <result property="authorNicknamePy"    column="author_nickname_py"    />
+        <result property="fp"    column="fp"    />
+        <result property="slug"    column="slug"    />
+        <result property="voterFp"    column="voter_fp"    />
+    </resultMap>
+
+    <sql id="selectArticleRankVo">
+        select id, author_avatar, author_nickname, rank_date, rank_no, title, author_fp, author_nickname_py, fp, slug, voter_fp from js_article_rank
+    </sql>
+
+    <select id="selectArticleRankList" parameterType="ArticleRank" resultMap="ArticleRankResult">
+        <include refid="selectArticleRankVo"/>
+        <where>  
+            <if test="authorNickname != null  and authorNickname != ''">
+             and ( author_nickname like concat('%', #{authorNickname}, '%') or author_nickname_py like concat('%', #{authorNickname}, '%') )
+            </if>
+            <if test="params.beginRankDate != null and params.beginRankDate != '' and params.endRankDate != null and params.endRankDate != ''"> and date_format(rank_date, '%Y-%m-%d') between #{params.beginRankDate} and #{params.endRankDate}</if>
+            <if test="params.beginRankDate != null and params.beginRankDate != '' and ( params.endRankDate == null or params.endRankDate == '' )"> and date_format(rank_date, '%Y-%m-%d') = #{params.beginRankDate} </if>
+            <if test="(params.beginRankDate == null or params.beginRankDate == '') and params.endRankDate != null and params.endRankDate != ''"> and date_format(rank_date, '%Y-%m-%d') =  #{params.endRankDate}</if>
+
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%') </if>
+        </where>
+        order by rank_date desc , rank_no asc
+    </select>
+    
+    <select id="selectArticleRankById" parameterType="Long" resultMap="ArticleRankResult">
+        <include refid="selectArticleRankVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertArticleRank" parameterType="ArticleRank">
+        insert into js_article_rank
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="authorAvatar != null">author_avatar,</if>
+            <if test="authorNickname != null">author_nickname,</if>
+            <if test="rankDate != null">rank_date,</if>
+            <if test="rankNo != null">rank_no,</if>
+            <if test="title != null">title,</if>
+            <if test="authorFp != null">author_fp,</if>
+            <if test="authorNicknamePy != null">author_nickname_py,</if>
+            <if test="fp != null">fp,</if>
+            <if test="slug != null">slug,</if>
+            <if test="voterFp != null">voter_fp,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="authorAvatar != null">#{authorAvatar},</if>
+            <if test="authorNickname != null">#{authorNickname},</if>
+            <if test="rankDate != null">#{rankDate},</if>
+            <if test="rankNo != null">#{rankNo},</if>
+            <if test="title != null">#{title},</if>
+            <if test="authorFp != null">#{authorFp},</if>
+            <if test="authorNicknamePy != null">#{authorNicknamePy},</if>
+            <if test="fp != null">#{fp},</if>
+            <if test="slug != null">#{slug},</if>
+            <if test="voterFp != null">#{voterFp},</if>
+         </trim>
+    </insert>
+
+    <insert id="insertArticleRankList">
+        insert into js_article_rank (
+            id, author_avatar, author_nickname, rank_date, rank_no, title, author_fp, author_nickname_py, fp, slug, voter_fp
+        ) values
+        <foreach collection ="rankList" item="rank" separator =",">
+            ( #{rank.id}, #{rank.authorAvatar}, #{rank.authorNickname}, #{rank.rankDate}, #{rank.rankNo},
+            #{rank.title}, #{rank.authorFp}, #{rank.authorNicknamePy}, #{rank.fp}, #{rank.slug}, #{rank.voterFp}  )
+        </foreach >
+    </insert>
+
+    <update id="updateArticleRank" parameterType="ArticleRank">
+        update js_article_rank
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="authorAvatar != null">author_avatar = #{authorAvatar},</if>
+            <if test="authorNickname != null">author_nickname = #{authorNickname},</if>
+            <if test="rankDate != null">rank_date = #{rankDate},</if>
+            <if test="rankNo != null">rank_no = #{rankNo},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="authorFp != null">author_fp = #{authorFp},</if>
+            <if test="authorNicknamePy != null">author_nickname_py = #{authorNicknamePy},</if>
+            <if test="fp != null">fp = #{fp},</if>
+            <if test="slug != null">slug = #{slug},</if>
+            <if test="voterFp != null">voter_fp = #{voterFp},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateNickNameBySlug">
+        update  JS_ARTICLE_RANK set author_nickname = #{newNickName} , author_nickname_py = #{pinyinString} where slug = #{slug}
+    </update>
+
+    <delete id="deleteArticleRankById" parameterType="Long">
+        delete from js_article_rank where id = #{id}
+    </delete>
+
+    <delete id="deleteArticleRankByIds" parameterType="String">
+        delete from js_article_rank where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByDate">
+        delete from JS_ARTICLE_RANK  where rank_date = #{rankDate}
+    </delete>
+
+
+    <select id="countByDate" resultType="java.lang.Long">
+        select count(1) from JS_ARTICLE_RANK  where rank_date = #{rankDate}
+    </select>
+    <select id="findBySlug" resultMap="ArticleRankResult">
+        <include refid="selectArticleRankVo"/>
+         where slug = #{slug}
+    </select>
+    <select id="selectNickNameList" resultType="java.lang.String">
+        select distinct author_nickname from JS_ARTICLE_RANK
+        where author_nickname like concat('%', #{keyword}, '%') or
+        author_nickname_py like concat('%', #{keyword}, '%')
+    </select>
+</mapper>

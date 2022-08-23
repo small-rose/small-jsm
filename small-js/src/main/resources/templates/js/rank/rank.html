@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('上榜数据列表')" />
+</head>
+<style type="text/css">
+    .user-img {
+        width: 24px;
+        height: 24px;
+        border-radius: 12px;
+        vertical-align: middle;
+    }
+</style>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>作者昵称：</label>
+                                <!--<input type="text" name="authorNickname" id="nickName"/>-->
+                                <div class="input-group" style="width: 100px;">
+                                    <input type="text" class="" id="nickName" name="authorNickname">
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-white dropdown-toggle" style="height: 31px" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        </ul>
+                                    </div>
+                                    <!-- /btn-group -->
+                                </div>
+                            </li>
+                            <li class="select-time">
+                                <label>上榜日期：</label>
+                                <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="params[beginRankDate]"/>
+                                <span>-</span>
+                                <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="params[endRankDate]"/>
+                            </li>
+                            <li>
+                                <label>文章标题：</label>
+                                <input type="text" name="title"/>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="js:rank:add">
+                    <i class="fa fa-plus"></i> 添加
+                </a>
+                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="js:rank:edit">
+                    <i class="fa fa-edit"></i> 修改
+                </a>
+                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="js:rank:remove">
+                    <i class="fa fa-remove"></i> 删除
+                </a>
+                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="js:rank:export">
+                    <i class="fa fa-download"></i> 导出
+                </a>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: bootstrap-suggest-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('js:rank:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('js:rank:remove')}]];
+        var prefix = ctx + "js/rank";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                detailUrl: prefix + "/detail/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "上榜数据",
+                sortOrder: "desc",
+                pageList: [10, 20,30, 50,100],
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '主键ID',
+                    visible: false
+                },
+                {
+                    field: 'authorAvatar',
+                    title: '头像',
+                    visible: false,
+                    formatter: function(value, row, index){
+                        return '<img class="user-img" src="'+value+'" style="z-index: 1000;">';
+                    }
+                },
+                {
+                    field: 'authorNickname',
+                    title: '作者昵称',
+                    formatter: function(value, row, index){
+                        return '<img class="user-img" src="'+row.authorAvatar+'" style="z-index: 1000;" /> '+value;
+                    }
+                },
+                {
+                    field: 'rankDate',
+                    title: '上榜日期'
+                },
+                {
+                    field: 'rankNo',
+                    title: '上榜排名',
+                    align: "center",
+                    formatter: function(value, item, index) {
+                        if (item.rankNo == '1') {
+                            return '<span class="label label-success">'+value+'</span>';
+                        }
+                        else if (item.rankNo == '2') {
+                            return '<span class="label label-primary">'+value+'</span>';
+                        }
+                        else if (item.rankNo == '3') {
+                            return '<span class="label label-warning">'+value+'</span>';
+                        }else{
+                            return value ;
+                        }
+                    }
+                },
+                {
+                    field: 'title',
+                    title: '文章标题',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-info btn-xs" target="_blank"  href="https://www.jianshu.com/p/'+row.slug+'">'+value+'</a>');
+                        return actions.join('');
+                    }
+                },
+                {
+                    field: 'authorFp',
+                    title: '作者收益',
+                    visible: false
+                },
+                {
+                    field: 'authorNicknamePy',
+                    title: '作者昵称拼音',
+                    visible: false
+                },
+                {
+                    field: 'fp',
+                    title: '总收益',
+                    visible: false
+                },
+                {
+                    field: 'slug',
+                    title: '文章slug',
+                    visible: false
+                },
+                {
+                    field: 'voterFp',
+                    title: '点赞收益',
+                    visible: false
+                }
+                /*
+                ,{
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }*/
+                ]
+            };
+            $.table.init(options);
+        });
+        //淘宝搜索建议测试
+        var nickNameBsSuggest = $("#nickName").bsSuggest({
+            indexId: 0,                 // data.value 的第几个数据，作为input输入框的内容
+            indexKey: 0,                // data.value 的第几个数据，作为input输入框的内容
+            allowNoKeyword: false,      // 是否允许无关键字时请求数据
+            hideOnSelect: true,         // 鼠标从列表单击选择了值时，是否隐藏选择列表
+            multiWord: true,            // 以分隔符号分割的多关键字支持
+            separator: ",",             // 多关键字支持时的分隔符，默认为空格
+            getDataMethod: "url",       // 获取数据的方式，总是从 URL 获取
+            effectiveFieldsAlias: {
+                Keyword: "简书昵称"
+            },
+            showHeader: true,
+            //url: 'http://suggest.taobao.com/sug?code=utf-8&extras=1&q=',
+            url: prefix + "/nickName?keyword=",
+            /*优先从url ajax 请求 json 帮助数据，注意最后一个参数为关键字请求参数*/
+            //jsonp: 'callback',
+            /*如果从 url 获取数据，并且需要跨域，则该参数必须设置*/
+            processData: function (json) { // url 获取数据时，对数据的处理，作为 getData 的回调函数
+                var i, len, data = {
+                    value: []
+                };
+
+                if (!json || !json.result || json.result.length == 0) {
+                    return false;
+                }
+
+               // console.log(json);
+                len = json.result.length;
+
+                for (i = 0; i < len; i++) {
+                    data.value.push({
+                        "Keyword": json.result[i]
+                    });
+                }
+                //.log(data);
+                return data;
+            }
+        });
+
+    </script>
+</body>
+</html>

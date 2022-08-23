@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.JsReportMapper">
+
+    <select id="selectCurrentWeekList" resultType="com.small.js.web.vo.ReportVO">
+        select shou_date as shouDate, count(1) as count from js_subject_data_info
+        where date_format(shou_date, '%Y-%m-%d') between #{start} and #{end} group by shou_date order by shou_date ;
+    </select>
+
+    <select id="getAllRecommenders" resultType="java.lang.String">
+        select distinct recommender from js_subject_data_info
+        where recommender is not null and recommender !=''
+        and  date_format(shou_date, '%Y-%m-%d') between #{start} and #{end}
+    </select>
+
+    <select id="getDataRecommender" resultType="com.small.js.web.vo.ReportVO">
+       select d.shou_date as shouDate, count(1) as count from js_subject_data_info d
+        where d.recommender is not null and d.recommender !=''
+          and d.recommender = #{recommender}
+        and  date_format(d.shou_date, '%Y-%m-%d') between #{start} and #{end}
+        group by d.shou_date  order by d.shou_date
+    </select>
+</mapper>

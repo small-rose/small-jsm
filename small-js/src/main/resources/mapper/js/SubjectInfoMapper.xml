@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.SubjectInfoMapper">
+    
+    <resultMap type="SubjectInfo" id="SubjectInfoResult">
+        <result property="id"    column="id"    />
+        <result property="subjectSlug"    column="subject_slug"    />
+        <result property="title"    column="title"    />
+        <result property="titlePy"    column="title_py"    />
+    </resultMap>
+
+    <sql id="selectSubjectInfoVo">
+        select id, subject_slug, title, title_py from js_subject_info
+    </sql>
+
+    <select id="selectSubjectInfoList" parameterType="SubjectInfo" resultMap="SubjectInfoResult">
+        <include refid="selectSubjectInfoVo"/>
+        <where>  
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectSubjectInfoById" parameterType="Long" resultMap="SubjectInfoResult">
+        <include refid="selectSubjectInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectSubjectInfoBySubjectId" resultMap="SubjectInfoResult">
+        <include refid="selectSubjectInfoVo"/>
+        where subject_slug = #{subjectId}
+    </select>
+
+    <insert id="insertSubjectInfo" parameterType="SubjectInfo">
+        insert into js_subject_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="subjectSlug != null">subject_slug,</if>
+            <if test="title != null">title,</if>
+            <if test="titlePy != null">title_py,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="subjectSlug != null">#{subjectSlug},</if>
+            <if test="title != null">#{title},</if>
+            <if test="titlePy != null">#{titlePy},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSubjectInfo" parameterType="SubjectInfo">
+        update js_subject_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="subjectSlug != null">subject_slug = #{subjectSlug},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="titlePy != null">title_py = #{titlePy},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSubjectInfoById" parameterType="Long">
+        delete from js_subject_info where id = #{id}
+    </delete>
+
+    <delete id="deleteSubjectInfoByIds" parameterType="String">
+        delete from js_subject_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

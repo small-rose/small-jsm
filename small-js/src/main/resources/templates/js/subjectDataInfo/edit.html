@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改专题数据')" />
+    <th:block th:include="include :: datetimepicker-css" />
+</head>
+<style type="text/css">
+    .user-img {
+        width: 24px;
+        height: 24px;
+        border-radius: 12px;
+        vertical-align: middle;
+    }
+    #bootstrap-tree-table{
+        width: 100% !important;
+    }
+</style>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-subjectDataInfo-edit" th:object="${subjectDataInfo}">
+            <input name="id" th:field="*{id}" type="hidden">
+
+            <div class="form-group" hidden>
+                <label class="col-sm-3 control-label">理事会赞赏：</label>
+                <div class="col-sm-8">
+                    <input name="lpReward" th:field="*{lpReward}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">作者昵称：</label>
+                <div class="col-sm-8">
+                    <input name="nickName" th:field="*{nickName}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">【可更改】推荐人：</label>
+                <div class="col-sm-8">
+                    <!--<input name="recommender" th:field="*{recommender}" class="form-control" type="text" >-->
+                    <div class="input-group" style="width: 300px;">
+                        <input type="text" class="form-control" id="recommender" name="recommender" th:field="*{recommender}">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-white dropdown-toggle" style="height: 31px" data-toggle="dropdown">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                            </ul>
+                            <button type="button" class="btn btn-info btn-sm " id="clearRecommender">清空推荐人</button>
+                        </div>
+                        <!-- /btn-group -->
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">推荐人slug：</label>
+                <div class="col-sm-8">
+                    <input id="recommenderSlug" name="recommenderSlug" th:field="*{recommenderSlug}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">【可更改】收录日期：</label>
+                <div class="col-sm-8">
+                    <div class="input-group date">
+                        <!--
+                        <input name="shouDate" th:value="${#dates.format(subjectDataInfo.shouDate, 'yyyy-MM-dd')}" class="form-control" placeholder="yyyy-MM-dd" type="text">
+                        -->
+                        <input name="shouDate" th:value="${subjectDataInfo.shouDate}" class="form-control" placeholder="yyyy-MM-dd" type="text">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">文章标题：</label>
+                <div class="col-sm-8">
+                    <input name="title" th:field="*{title}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label" >用户slug：</label>
+                <div class="col-sm-8">
+                    <input name="userSlug" th:field="*{userSlug}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">文章id：</label>
+                <div class="col-sm-8">
+                    <input name="wenId" th:field="*{wenId}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">文章slug：</label>
+                <div class="col-sm-8">
+                    <input name="wenSlug" th:field="*{wenSlug}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">    
+                <label class="col-sm-3 control-label">文章地址：</label>
+                <div class="col-sm-8">
+                    <input name="wenUrl" th:field="*{wenUrl}" class="form-control" type="text" readonly="readonly">
+                </div>
+            </div>
+
+            <div class="form-group" hidden>
+                <label class="col-sm-3 control-label">赞赏数据：</label>
+                <div class="col-sm-8">
+                    <textarea name="rewards" class="form-control" rows="5" readonly="readonly">[[*{rewards}]]</textarea>
+                </div>
+            </div>
+            <div class="form-group" hidden>
+                <label class="col-sm-3 control-label">评论数据：</label>
+                <div class="col-sm-8">
+                    <textarea id="comments" name="comments" class="form-control" rows="10" readonly="readonly">[[*{comments}]]</textarea>
+                </div>
+            </div>
+            <!--<div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>-->
+
+        </form>
+
+    </div>
+
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-tree-table" style="word-break:break-all; word-wrap:break-all;"></table>
+        </div>
+
+    <th:block th:include="include :: footer" />
+    <th:block th:include="include :: bootstrap-suggest-js" />
+    <th:block th:include="include :: datetimepicker-js" />
+    <script th:inline="javascript">
+
+
+        var prefix = ctx + "js/subjectDataInfo";
+        $("#form-subjectDataInfo-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-subjectDataInfo-edit').serialize());
+            }
+        }
+
+        $("input[name='shouDate']").datetimepicker({
+            format: "yyyy-mm-dd",
+            minView: "month",
+            autoclose: true
+        });
+
+        $('#clearRecommender').on('click', function (e) {
+            // 处理自己的业务
+            $("#recommender").val("");
+            $("#recommenderSlug").val("");
+        });
+        //nickName搜索建议测试
+        var recommender = $("#recommender").bsSuggest({
+            indexId: 0,                 // data.value 的第几个数据，作为input输入框的内容
+            indexKey: 1,                // data.value 的第几个数据，作为input输入框的内容
+            allowNoKeyword: false,      // 是否允许无关键字时请求数据
+            hideOnSelect: true,         // 鼠标从列表单击选择了值时，是否隐藏选择列表
+            multiWord: true,            // 以分隔符号分割的多关键字支持
+            separator: ",",             // 多关键字支持时的分隔符，默认为空格
+            getDataMethod: "url",       // 获取数据的方式，总是从 URL 获取
+            effectiveFieldsAlias: {
+                Id: "用户slug",
+                nickName: "简书昵称"
+            },
+            showHeader: true,
+            //url: 'http://suggest.taobao.com/sug?code=utf-8&extras=1&q=',
+            url: prefix + "/recommender?keyword=",
+            /*优先从url ajax 请求 json 帮助数据，注意最后一个参数为关键字请求参数*/
+            //jsonp: 'callback',
+            /*如果从 url 获取数据，并且需要跨域，则该参数必须设置*/
+            processData: function (json) { // url 获取数据时，对数据的处理，作为 getData 的回调函数
+                var i, len, data = {
+                    value: []
+                };
+
+                if (!json || !json.result || json.result.length == 0) {
+                    return false;
+                }
+
+                console.log(json);
+                len = json.result.length;
+
+                for (i = 0; i < len; i++) {
+                    data.value.push({
+                        "Id": json.result[i].slug,
+                        "nickName": json.result[i].nickName
+                    });
+                }
+                console.log(data);
+                return data;
+            }
+        }).on('onSetSelectValue', function (e, selectedData, selectedRawData) {
+            console.log('onSetSelectValue: ', e.target.value, selectedData, selectedRawData);
+            $("#recommenderSlug").val(selectedRawData.Id);
+        });
+
+    </script>
+</body>
+</html>

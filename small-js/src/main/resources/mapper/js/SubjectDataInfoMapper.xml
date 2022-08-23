@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.SubjectDataInfoMapper">
+    
+    <resultMap type="SubjectDataInfo" id="SubjectDataInfoResult">
+        <result property="id"    column="id"    />
+        <result property="comments"    column="comments"    />
+        <result property="lpReward"    column="lp_reward"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="recommender"    column="recommender"    />
+        <result property="recommenderSlug"    column="recommender_slug"    />
+        <result property="rewards"    column="rewards"    />
+        <result property="shouDate"    column="shou_date"    />
+        <result property="shouTime"    column="shou_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="subjectId"    column="subject_id"    />
+        <result property="title"    column="title"    />
+        <result property="userSlug"    column="user_slug"    />
+        <result property="wenId"    column="wen_id"    />
+        <result property="wenSlug"    column="wen_slug"    />
+        <result property="wenUrl"    column="wen_url"    />
+    </resultMap>
+
+    <sql id="selectSubjectDataInfoVo">
+        select id, comments, lp_reward, nick_name, recommender, recommender_slug, rewards, shou_date, shou_time,update_time, subject_id, title, user_slug, wen_id, wen_slug, wen_url from js_subject_data_info
+    </sql>
+
+    <select id="selectSubjectDataInfoList" parameterType="SubjectDataInfo" resultMap="SubjectDataInfoResult">
+        <include refid="selectSubjectDataInfoVo"/>
+        <where>  
+            <if test="subject.nickName != null  and subject.nickName != ''"> and nick_name like concat('%', #{subject.nickName}, '%')</if>
+            <if test="subject.recommender != null  and subject.recommender != ''"> and recommender = #{subject.recommender}</if>
+            <if test="subject.params.beginShouDate != null and subject.params.beginShouDate != '' and subject.params.endShouDate != null and subject.params.endShouDate != ''"> and shou_date between #{subject.params.beginShouDate} and #{subject.params.endShouDate}</if>
+            <if test=" (subject.params.beginShouDate != null and subject.params.beginShouDate != '') and ( subject.params.endShouDate == null or subject.params.endShouDate == '') "> and shou_date = #{subject.params.beginShouDate} </if>
+            <if test=" (subject.params.beginShouDate ==null or  subject.params.beginShouDate == '') and ( subject.params.endShouDate != null and subject.params.endShouDate != '') "> and shou_date = #{subject.params.endShouDate}</if>
+            <if test="subject.title != null  and subject.title != ''"> and title like concat('%', #{subject.title}, '%')</if>
+        </where>
+        order by shou_Time ${order}
+    </select>
+    
+    <select id="selectSubjectDataInfoById" parameterType="Long" resultMap="SubjectDataInfoResult">
+        <include refid="selectSubjectDataInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSubjectDataInfo" parameterType="SubjectDataInfo">
+        insert into js_subject_data_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="comments != null">comments,</if>
+            <if test="lpReward != null">lp_reward,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="recommender != null">recommender,</if>
+            <if test="recommenderSlug != null">recommender_slug,</if>
+            <if test="rewards != null">rewards,</if>
+            <if test="shouDate != null">shou_date,</if>
+            <if test="shouTime != null">shou_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="subjectId != null">subject_id,</if>
+            <if test="title != null">title,</if>
+            <if test="userSlug != null">user_slug,</if>
+            <if test="wenId != null">wen_id,</if>
+            <if test="wenSlug != null">wen_slug,</if>
+            <if test="wenUrl != null">wen_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="comments != null">#{comments},</if>
+            <if test="lpReward != null">#{lpReward},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="recommender != null">#{recommender},</if>
+            <if test="recommenderSlug != null">#{recommenderSlug},</if>
+            <if test="rewards != null">#{rewards},</if>
+            <if test="shouDate != null">#{shouDate},</if>
+            <if test="shouTime != null">#{shouTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="subjectId != null">#{subjectId},</if>
+            <if test="title != null">#{title},</if>
+            <if test="userSlug != null">#{userSlug},</if>
+            <if test="wenId != null">#{wenId},</if>
+            <if test="wenSlug != null">#{wenSlug},</if>
+            <if test="wenUrl != null">#{wenUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSubjectDataInfo" parameterType="SubjectDataInfo">
+        update js_subject_data_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="comments != null">comments = #{comments},</if>
+            <if test="lpReward != null">lp_reward = #{lpReward},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="recommender != null">recommender = #{recommender},</if>
+            <if test="recommenderSlug != null">recommender_slug = #{recommenderSlug},</if>
+            <if test="rewards != null">rewards = #{rewards},</if>
+            <if test="shouDate != null">shou_date = #{shouDate},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="subjectId != null">subject_id = #{subjectId},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="userSlug != null">user_slug = #{userSlug},</if>
+            <if test="wenId != null">wen_id = #{wenId},</if>
+            <if test="wenSlug != null">wen_slug = #{wenSlug},</if>
+            <if test="wenUrl != null">wen_url = #{wenUrl},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateRecomenderInfo">
+        update js_subject_data_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="recommenderVO.recommender != null">recommender = #{recommenderVO.recommender},</if>
+            <if test="recommenderVO.recommenderSlug != null">recommender_slug = #{recommenderVO.recommenderSlug},</if>
+            <if test="recommenderVO.shouDate != null">shou_date = #{recommenderVO.shouDate},</if>
+            update_time = now()
+        </trim>
+        where id = #{recommenderVO.id}
+    </update>
+
+    <delete id="deleteSubjectDataInfoById" parameterType="Long">
+        delete from js_subject_data_info where id = #{id}
+    </delete>
+
+    <delete id="deleteSubjectDataInfoByIds" parameterType="String">
+        delete from js_subject_data_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectNickNameByKeyword" resultType="java.lang.String">
+        select distinct  nick_name from js_subject_data_info where nick_name like concat('%', #{keyword}, '%')
+    </select>
+
+    <select id="selectSubjectDataInfoByWenId" resultMap="SubjectDataInfoResult">
+        select * from js_subject_data_info where wen_id  = #{wenId}
+    </select>
+
+</mapper>

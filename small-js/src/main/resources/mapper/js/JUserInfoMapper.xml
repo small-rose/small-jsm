@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.JUserInfoMapper">
+    
+    <resultMap type="JUserInfo" id="JUserInfoResult">
+        <result property="id"    column="id"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="nickNamePy"    column="nick_name_py"    />
+        <result property="precommender"    column="precommender"    />
+        <result property="slug"    column="slug"    />
+        <result property="slugUrl"    column="slug_url"    />
+    </resultMap>
+
+    <sql id="selectJUserInfoVo">
+        select id, nick_name, nick_name_py, precommender, slug, slug_url from js_user_info
+    </sql>
+
+    <select id="selectJUserInfoList" parameterType="JUserInfo" resultMap="JUserInfoResult">
+        <include refid="selectJUserInfoVo"/>
+        <where>  
+            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="precommender != null "> and precommender = #{precommender}</if>
+        </where>
+    </select>
+    
+    <select id="selectJUserInfoById" parameterType="Long" resultMap="JUserInfoResult">
+        <include refid="selectJUserInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectNickNameList" parameterType="java.lang.String"  resultMap="JUserInfoResult">
+        select id, nick_name, slug from js_user_info
+         where precommender =1
+         <if test="keyword !=null and keyword !=''" >
+            and ( nick_name like concat('%', #{keyword}, '%') or
+             nick_name_py like concat('%', #{keyword}, '%') )
+         </if>
+
+    </select>
+    <select id="findBySlug" resultType="com.small.js.web.domain.JUserInfo">
+        <include refid="selectJUserInfoVo"/>
+        where slug = #{slug}
+    </select>
+
+    <select id="findCommenderList" resultMap="JUserInfoResult">
+        <include refid="selectJUserInfoVo"/>
+        where precommender =1
+    </select>
+
+    <insert id="insertJUserInfo" parameterType="JUserInfo">
+        insert into js_user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="nickNamePy != null">nick_name_py,</if>
+            <if test="precommender != null">precommender,</if>
+            <if test="slug != null">slug,</if>
+            <if test="slugUrl != null">slug_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="nickNamePy != null">#{nickNamePy},</if>
+            <if test="precommender != null">#{precommender},</if>
+            <if test="slug != null">#{slug},</if>
+            <if test="slugUrl != null">#{slugUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updateJUserInfo" parameterType="JUserInfo">
+        update js_user_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="nickNamePy != null">nick_name_py = #{nickNamePy},</if>
+            <if test="precommender != null">precommender = #{precommender},</if>
+            <if test="slug != null">slug = #{slug},</if>
+            <if test="slugUrl != null">slug_url = #{slugUrl},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteJUserInfoById" parameterType="Long">
+        delete from js_user_info where id = #{id}
+    </delete>
+
+    <delete id="deleteJUserInfoByIds" parameterType="String">
+        delete from js_user_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

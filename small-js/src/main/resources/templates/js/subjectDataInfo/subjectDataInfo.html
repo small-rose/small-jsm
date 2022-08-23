@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('专题数据列表')" />
+</head>
+<style type="text/css">
+    .select-list li input{
+        width: 150px;
+    }
+</style>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>作者昵称：</label>
+                                <input type="text" name="nickName"/>
+                            </li>
+                            <li>
+                                <label>推荐人：</label>
+                                <!--<input type="text" name="recommender"/>-->
+                                <div class="input-group" style="width: 100px;">
+
+                                    <input type="text" class="" id="recommender" name="recommender">
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-white dropdown-toggle" style="height: 31px" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                        </ul>
+                                    </div>
+                                    <!-- /btn-group -->
+                                </div>
+                            </li>
+                            <!--
+                            <li>
+                                <label>文章标题：</label>
+                                <input type="text" name="title"/>
+                            </li>
+                            -->
+                            <li class="select-time-bak">
+                                <label>收录日期：</label>
+                                <!--
+                                <input type="text" class="time-input" id="startTime" placeholder="开始时间" name="params[beginShouDate]"/>
+                                -->
+                                <input type="text" class="time-input" id="startTime" placeholder="收录时间" name="params[beginShouDate]" th:value="${#dates.format(new java.util.Date(),'yyyy-MM-dd')}" />
+                                <!--
+                                <span>-</span>
+                                <input type="text" class="time-input" id="endTime" placeholder="结束时间" name="params[endShouDate]"/>
+                                -->
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="js:subjectDataInfo:add">
+                    <i class="fa fa-plus"></i> 添加
+                </a>
+                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="js:subjectDataInfo:edit">
+                    <i class="fa fa-edit"></i> 修改
+                </a>
+                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="js:subjectDataInfo:remove">
+                    <i class="fa fa-remove"></i> 删除
+                </a>
+                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="js:subjectDataInfo:export">
+                    <i class="fa fa-download"></i> 导出
+                </a>
+                <!--
+                <a class="btn btn-info" onclick="javascript:jsReport()" shiro:hasPermission="js:subjectReport:view">
+                    <i class="fa fa-list"></i> 统计
+                </a>
+                -->
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+     <th:block th:include="include :: bootstrap-suggest-js" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('js:subjectDataInfo:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('js:subjectDataInfo:remove')}]];
+        var prefix = ctx + "js/subjectDataInfo";
+        /**************************************时间格式化处理************************************/
+        function dateFtt(fmt,date) { //author: meizz
+            var o = {
+                "M+" : date.getMonth()+1,                 //月份
+                "d+" : date.getDate(),                    //日
+                "h+" : date.getHours(),                   //小时
+                "m+" : date.getMinutes(),                 //分
+                "s+" : date.getSeconds(),                 //秒
+                "q+" : Math.floor((date.getMonth()+3)/3), //季度
+                "S"  : date.getMilliseconds()             //毫秒
+            };
+            if(/(y+)/.test(fmt))
+                fmt = fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
+            for(var k in o)
+                if(new RegExp("("+ k +")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            return fmt;
+        }
+
+        $(function() {
+
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                detailUrl: prefix + "/detail/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "专题数据",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: '主键ID',
+                    visible: false
+                },
+                {
+                    field: 'nickName',
+                    title: '作者昵称'
+                },
+                {
+                    field: 'recommender',
+                    title: '推荐人'
+                },
+                    {
+                        field: 'recommenderSlug',
+                        title: '推荐人Slug',
+                        visible: false
+                    },
+                {
+                    field: 'shouDate',
+                    title: '收录日期'
+                },
+                {
+                    field: 'subjectId',
+                    title: '专题slug',
+                    visible: false
+                },
+                {
+                    field: 'title',
+                    title: '文章标题',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-primary btn-xs" target="_blank"  href="'+row.wenUrl+'">'+value+'</a>');
+                        return actions.join('');
+                    }
+                }, {
+                        field: 'shouTime',
+                        title: '收录时间'
+                 },
+                 {
+                        field: 'updateTime',
+                        title: '更新时间',
+                        visible: false
+
+                 },
+                {
+                    field: 'userSlug',
+                    title: '用户slug',
+                    visible: false
+                },
+                {
+                    field: 'wenUrl',
+                    title: '文章地址',
+                    visible: false
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-info  btn-xs" href="javascript:void(0)" onclick="$.operate.detailTab(' + row.id + ')"><i class="fa fa-comment"></i>看评论</a> ');
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        /*
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        */
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+
+        /* 统计查询 */
+        function jsReport(jobId) {
+            var url = ctx + 'js/subjectReport';
+            if ($.common.isNotEmpty(jobId)) {
+                url += '?jobId=' + jobId;
+            }
+            $.modal.openTab("统计查询", url);
+        }
+        /* 统计查询 */
+        function openDetail(jobId) {
+            var url = ctx + 'detail/'+ jobId;
+            $.modal.openFull("查看评论", url);
+        }
+
+        //nickName搜索建议测试
+        var recommender = $("#recommender").bsSuggest({
+            indexId: 0,                 // data.value 的第几个数据，作为input输入框的内容
+            indexKey: 0,                // data.value 的第几个数据，作为input输入框的内容
+            allowNoKeyword: false,      // 是否允许无关键字时请求数据
+            hideOnSelect: true,         // 鼠标从列表单击选择了值时，是否隐藏选择列表
+            multiWord: true,            // 以分隔符号分割的多关键字支持
+            separator: ",",             // 多关键字支持时的分隔符，默认为空格
+            getDataMethod: "url",       // 获取数据的方式，总是从 URL 获取
+            effectiveFieldsAlias: {
+                nickName: "简书昵称"
+               // Id: "用户slug",
+
+            },
+            showHeader: true,
+            //url: 'http://suggest.taobao.com/sug?code=utf-8&extras=1&q=',
+            url: prefix + "/recommender?keyword=",
+            /*优先从url ajax 请求 json 帮助数据，注意最后一个参数为关键字请求参数*/
+            //jsonp: 'callback',
+            /*如果从 url 获取数据，并且需要跨域，则该参数必须设置*/
+            processData: function (json) { // url 获取数据时，对数据的处理，作为 getData 的回调函数
+                var i, len, data = {
+                    value: []
+                };
+
+                if (!json || !json.result || json.result.length == 0) {
+                    return false;
+                }
+
+                console.log(json);
+                len = json.result.length;
+
+                for (i = 0; i < len; i++) {
+                    data.value.push({
+                        //"Id": json.result[i].slug,
+                        "nickName": json.result[i].nickName
+                    });
+                }
+                console.log(data);
+                return data;
+            }
+        });
+
+        function exportData() {
+//eg2
+            layer.open({
+                content: '请选择排序方式'
+                ,btn: ['正序', '倒序', '取消']
+                ,yes: function(index, layero){
+                    //按钮【按钮一】的回调
+                }
+                ,btn2: function(index, layero){
+                    //按钮【按钮二】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+                ,btn3: function(index, layero){
+                    //按钮【按钮三】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+                ,cancel: function(){
+                    //右上角关闭回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        }
+    </script>
+</body>
+</html>

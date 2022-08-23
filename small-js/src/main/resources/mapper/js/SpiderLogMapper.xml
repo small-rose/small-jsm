@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.small.js.web.mapper.SpiderLogMapper">
+    
+    <resultMap type="SpiderLog" id="SpiderLogResult">
+        <result property="id"    column="id"    />
+        <result property="execTime"    column="exec_time"    />
+        <result property="rankDate"    column="rank_date"    />
+        <result property="rankType"    column="rank_type"    />
+        <result property="result"    column="result"    />
+        <result property="status"    column="status"    />
+        <result property="updateResult"    column="update_result"    />
+    </resultMap>
+
+    <sql id="selectSpiderLogVo">
+        select id, exec_time, rank_date, rank_type, result, status, update_result from js_spider_log
+    </sql>
+
+    <select id="selectSpiderLogList" parameterType="SpiderLog" resultMap="SpiderLogResult">
+        <include refid="selectSpiderLogVo"/>
+        <where>  
+            <if test="params.beginRankDate != null and params.beginRankDate != '' and params.endRankDate != null and params.endRankDate != ''"> and rank_date between #{params.beginRankDate} and #{params.endRankDate}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectSpiderLogById" parameterType="Long" resultMap="SpiderLogResult">
+        <include refid="selectSpiderLogVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSpiderLog" parameterType="SpiderLog">
+        insert into js_spider_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="execTime != null">exec_time,</if>
+            <if test="rankDate != null">rank_date,</if>
+            <if test="rankType != null">rank_type,</if>
+            <if test="result != null">result,</if>
+            <if test="status != null">status,</if>
+            <if test="updateResult != null">update_result,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="execTime != null">#{execTime},</if>
+            <if test="rankDate != null">#{rankDate},</if>
+            <if test="rankType != null">#{rankType},</if>
+            <if test="result != null">#{result},</if>
+            <if test="status != null">#{status},</if>
+            <if test="updateResult != null">#{updateResult},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSpiderLog" parameterType="SpiderLog">
+        update js_spider_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="execTime != null">exec_time = #{execTime},</if>
+            <if test="rankDate != null">rank_date = #{rankDate},</if>
+            <if test="rankType != null">rank_type = #{rankType},</if>
+            <if test="result != null">result = #{result},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateResult != null">update_result = #{updateResult},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSpiderLogById" parameterType="Long">
+        delete from js_spider_log where id = #{id}
+    </delete>
+
+    <delete id="deleteSpiderLogByIds" parameterType="String">
+        delete from js_spider_log where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteSpiderLog">
+         delete from js_spider_log
+         <where>
+             <if test="id != null">id = #{id},</if>
+             <if test="rankDate != null">rank_date = #{rankDate},</if>
+             <if test="rankType != null">rank_type = #{rankType},</if>
+         </where>
+
+    </delete>
+
+
+    <select id="selectByRankDateRankType" resultMap="SpiderLogResult">
+        <include refid="selectSpiderLogVo"/>
+        where rank_date = #{rankDate} and rank_type = #{rankType}
+    </select>
+    <select id="selectByRankTypeUpdateResult" resultMap="SpiderLogResult">
+        <include refid="selectSpiderLogVo"/>
+        where  rank_type = #{rankType} order by rank_date desc
+    </select>
+
+</mapper>
