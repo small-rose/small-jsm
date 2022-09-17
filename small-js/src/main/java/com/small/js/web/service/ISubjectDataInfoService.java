@@ -45,6 +45,13 @@ public interface ISubjectDataInfoService
      */
     public int updateSubjectDataInfo(SubjectDataInfo subjectDataInfo);
 
+
+    /**
+     * 为了更新收录时间，以喜欢时间为准
+     * @param subjectDataInfo
+     * @return
+     */
+    public int updateSubjectDataInfoBySubjectIdWenSlug(SubjectDataInfo subjectDataInfo);
     /**
      * 批量删除专题数据
      * 

@@ -41,9 +41,18 @@ public class JSConstants {
 
 
     /**
-     * 专题接口前缀
+     * 搜索前缀
      */
     public static String URL_SEARCH_REG  = "https://www.jianshu.com/search/do?q=${keyword}&type=note&page=1&order_by=default";
     public final static String  REPLACE_SEARCH_KEY = "${keyword}";
+
+
+    /**
+     * 专题接口前缀
+     */
+    public static String URL_TIME_LINE_DEFAULT_REG  = "https://www.jianshu.com/users/${slugId}/timeline";
+    public static String URL_TIME_LINE_REG  = "https://www.jianshu.com/users/${slugId}/timeline?max_id=${maxId}&page=";
+    public final static String  REPLACE_SLUG_KEY = "${slugId}";
+    public final static String  REPLACE_MAXID_KEY = "${maxId}";
 
 }

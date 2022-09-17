@@ -79,6 +79,9 @@ public class SubjectDataInfoServiceImpl implements ISubjectDataInfoService
         return subjectDataInfoMapper.updateSubjectDataInfo(subjectDataInfo);
     }
 
+    public int updateSubjectDataInfoBySubjectIdWenSlug(SubjectDataInfo subjectDataInfo){
+        return subjectDataInfoMapper.updateSubjectDataInfoBySubjectIdWenSlug(subjectDataInfo);
+    }
     /**
      * 批量删除专题数据
      * 
@@ -116,7 +119,7 @@ public class SubjectDataInfoServiceImpl implements ISubjectDataInfoService
     @Override
     public void saveData(SubjectDataInfo subjectDataInfo) {
 
-        SubjectDataInfo ztData = subjectDataInfoMapper.selectSubjectDataInfoByWenId(subjectDataInfo.getWenId());
+        SubjectDataInfo ztData = subjectDataInfoMapper.selectSubjectDataInfoByWenId(subjectDataInfo.getWenId(), subjectDataInfo.getSubjectId());
         if (ztData==null){
             subjectDataInfo.setId(idService.getNextId());
             log.info("add data : {} ", JSON.toJSONString(subjectDataInfo));

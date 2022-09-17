@@ -27,6 +27,7 @@ public class AppTask {
     private UpdateNickNameTaskService updateNickNameTaskService ;
     @Autowired
     private SubjectDataInfoTaskService subjectDataInfoTaskService;
+
     @Autowired
     private ISubjectInfoService subjectInfoService ;
 
@@ -76,4 +77,8 @@ public class AppTask {
         }
         log.info("简书专题[ {} ]任务执行完成！！", subjectInfo.getTitle());
     }
+
+
+
+
 }

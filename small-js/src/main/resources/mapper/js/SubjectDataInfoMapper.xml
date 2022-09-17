@@ -105,6 +105,19 @@
         where id = #{id}
     </update>
 
+
+    <update id="updateSubjectDataInfoBySubjectIdWenSlug" parameterType="SubjectDataInfo">
+        update js_subject_data_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="shouTime != null">shou_time = #{shouTime},</if>
+            <if test="title != null">title = #{title},</if>
+        </trim>
+        where wen_slug = #{wenSlug} and subject_id = #{subjectId}
+    </update>
+
     <update id="updateRecomenderInfo">
         update js_subject_data_info
         <trim prefix="SET" suffixOverrides=",">
@@ -132,7 +145,7 @@
     </select>
 
     <select id="selectSubjectDataInfoByWenId" resultMap="SubjectDataInfoResult">
-        select * from js_subject_data_info where wen_id  = #{wenId}
+        select * from js_subject_data_info where wen_id  = #{wenId} and subject_id = #{subjectId}
     </select>
 
 </mapper>

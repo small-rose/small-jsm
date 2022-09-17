@@ -12,6 +12,7 @@ small:
   profile: /home/small/uploadPath
   # 获取ip地址开关
   addressEnabled: false
+  mailTo: 1758322705@qq.com
 
 # 开发环境配置
 server:
@@ -45,6 +46,25 @@ user:
 
 # Spring配置
 spring:
+
+  #邮箱配置
+  mail:
+    host: smtp.qq.com
+    username: small-rose@qq.com
+    #QQ邮箱的授权码
+    password: xxxx
+    default-encoding: UTF-8
+    port: 465
+    properties:
+      mail:
+        smtp:
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
   # 模板引擎
   thymeleaf:
     mode: HTML
@@ -149,7 +169,7 @@ aj:
     # blockPuzzle滑块 clickWord文字点选  default默认两者都实例化
     type: blockPuzzle
     # 右下角显示字
-    water-mark: ruoyi.vip
+    water-mark: small
     # 校验滑动拼图允许误差偏移量(默认5像素)
     slip-offset: 5
     # aes加密坐标开启或者禁用(true|false)

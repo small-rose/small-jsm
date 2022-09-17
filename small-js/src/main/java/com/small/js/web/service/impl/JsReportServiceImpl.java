@@ -1,5 +1,6 @@
 package com.small.js.web.service.impl;
 
+import com.small.js.util.SamllDateUtil;
 import com.small.js.web.mapper.JsReportMapper;
 import com.small.js.web.service.IJsReportService;
 import com.small.js.web.vo.ReportData;
@@ -10,7 +11,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,13 +53,16 @@ public class JsReportServiceImpl implements IJsReportService
 
     @Override
     public ReportData selectCurrentMonthList() {
-        LocalDate today = LocalDate.now();
-        LocalDate firstDay = today.with(TemporalAdjusters.firstDayOfMonth());
-        LocalDate lastDay = today.with(TemporalAdjusters.lastDayOfMonth());
-        String start = firstDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String end = lastDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate today = LocalDate.now().plusDays(1);
+        LocalDate firstDay = today.minusDays(31);
+        String start = firstDay.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String end = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-        String yyyyMM = today.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        LocalDate yyyyMMdd1 = LocalDate.parse(start, DateTimeFormatter.BASIC_ISO_DATE);
+        LocalDate yyyyMMdd2 = LocalDate.parse(end, DateTimeFormatter.BASIC_ISO_DATE);
+        List<LocalDate> localDates = SamllDateUtil.getsAllDatesInTheDateRange(yyyyMMdd1, yyyyMMdd2);
+
+      /*  String yyyyMM = today.format(DateTimeFormatter.ofPattern("yyyyMM"));
         LocalDate localDate = LocalDate.parse(yyyyMM + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
         //System.out.println("localDate为：" + localDate);
         Integer first = new Integer(localDate.format(DateTimeFormatter.BASIC_ISO_DATE));
@@ -70,13 +73,14 @@ public class JsReportServiceImpl implements IJsReportService
         for (int i= 1 ; i<= lastNum; i++){
             month.add(first);
             first++;
-        }
-        List<String> datax = month.stream().map(t -> String.valueOf(t)).collect(Collectors.toList());
+        }*/
+        List<String> datax = localDates.stream().map(l-> l.format(DateTimeFormatter.ofPattern("yyyyMMdd"))).collect(Collectors.toList());
+        //List<String> datax = month.stream().map(t -> String.valueOf(t)).collect(Collectors.toList());
         //System.out.println(datax.size());
         //System.out.println(datax);
         List<ReportVO> reportVOS = jsReportMapper.selectCurrentWeekList(start, end);
         if (CollectionUtils.isEmpty(reportVOS)){
-            return new ReportData();
+            reportVOS = new ArrayList<>();
         }
         Integer[] dataVal = new Integer[datax.size()];
         AtomicInteger count = new AtomicInteger(0);
@@ -100,24 +104,18 @@ public class JsReportServiceImpl implements IJsReportService
     @Override
     public List<List<Object>> selectRecommenderLastDaysList() {
         LocalDate today = LocalDate.now();//.minusDays(1);
-        LocalDate firstDay = today.minusDays(6);
-        String last = today.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate firstDay = today.minusDays(15);
 
+        String start = firstDay.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String end = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-        String start = firstDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate yyyyMMdd1 = LocalDate.parse(start, DateTimeFormatter.BASIC_ISO_DATE);
+        LocalDate yyyyMMdd2 = LocalDate.parse(end, DateTimeFormatter.BASIC_ISO_DATE);
+        List<LocalDate> localDates = SamllDateUtil.getsAllDatesInTheDateRange(yyyyMMdd1, yyyyMMdd2);
 
-        List<String> recommenderList = jsReportMapper.getAllRecommenders(start, last);
+        List<String> recommenderList = jsReportMapper.getAllRecommenders(start, end);
 
-        Integer first = new Integer(firstDay.format(DateTimeFormatter.BASIC_ISO_DATE));
-        // System.out.println("firstDay为：" + firstDay);
-        int lastNum = today.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
-        //System.out.println("lastNum为：" + lastNum);
-        List<Integer> days = new ArrayList<>(8);
-        for (int i= 1 ; i<= 7; i++){
-            days.add(first);
-            first++;
-        }
-        List<String> dayList = days.stream().map(s -> String.valueOf(s)).collect(Collectors.toList());
+        List<String> dayList = localDates.stream().map(s -> s.format(DateTimeFormatter.ofPattern("yyyyMMdd"))).collect(Collectors.toList());
 
         List<List<Object>> allData = new ArrayList<>();
         List<Object> prod = new ArrayList<>();
@@ -128,7 +126,7 @@ public class JsReportServiceImpl implements IJsReportService
         recommenderList.stream().forEach(r -> {
             List<Object> recommend = new ArrayList<>();
             recommend.add(r);
-            List<ReportVO> dataRecommender = jsReportMapper.getDataRecommender(start, last, r);
+            List<ReportVO> dataRecommender = jsReportMapper.getDataRecommender(start, end, r);
             Map<String, Integer> dataMap = dataRecommender.stream().collect(Collectors.toMap(ReportVO::getShouDateFormat, ReportVO::getCount));
             dayList.stream().forEach(d->{
                 if (dataMap.get(d)!=null) {

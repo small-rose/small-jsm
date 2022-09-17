@@ -5,9 +5,11 @@ import com.small.js.constans.JSConstants;
 import com.small.js.util.NetUtils;
 import kong.unirest.UnirestException;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +20,7 @@ import java.util.Map;
  * @date: 2022/8/14 16:04
  * @version: v1.0
  */
+@Slf4j
 @Data
 public abstract class BaseTaskService {
 
@@ -41,15 +44,34 @@ public abstract class BaseTaskService {
         return JSConstants.URL_ZHUAN_TI_REG.replace(JSConstants.REPLACE_ZT_KEY, subjectId);
     }
 
-    protected Document getSubjectPage(String url){
+    /**
+     * 取专题动态 URL
+     * @return
+     */
+    protected String gettTimeLineDefaultUrl(String userSlug){
+        return JSConstants.URL_TIME_LINE_DEFAULT_REG.replace(JSConstants.REPLACE_SLUG_KEY, userSlug);
+    }
+    /**
+     * 取专题动态 URL
+     * @return
+     */
+    protected String gettTimeLineUrl(String userSlug, String maxId){
+        return JSConstants.URL_TIME_LINE_REG.replace(JSConstants.REPLACE_SLUG_KEY, userSlug).replace(JSConstants.REPLACE_MAXID_KEY, maxId);
+    }
+
+    protected Document getPage(String url){
+        headers.put("Content-Type", "text/html; charset=utf-8");
+        log.info("请求headers头：" +headers);
+
+        log.info("请求cookies头：" +cookies);
         Document document = NetUtils.getDocument(url, JSConstants.REFERURL, headers, cookies);
         return document ;
     }
 
 
-    protected abstract void start(String subjectId, int start, int end) throws UnirestException;
+    protected abstract void start(String subjectId, int start, int end) throws UnirestException, ParseException;
 
-    protected abstract <T> List<T> parseData(Document zhuanTi, String subjectId) throws UnirestException;
+    protected abstract <T> List<T> parseData(Document zhuanTi, String subjectId) throws UnirestException, ParseException;
 
 
     /**

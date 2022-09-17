@@ -47,6 +47,14 @@ public interface SubjectDataInfoMapper
     public int updateSubjectDataInfo(SubjectDataInfo subjectDataInfo);
 
     /**
+     * 修改专题数据
+     *
+     * @param subjectDataInfo 专题数据
+     * @return 结果
+     */
+    public int updateSubjectDataInfoBySubjectIdWenSlug(SubjectDataInfo subjectDataInfo);
+
+    /**
      * 删除专题数据
      * 
      * @param id 专题数据主键
@@ -81,5 +89,5 @@ public interface SubjectDataInfoMapper
      * @param wenId
      * @return
      */
-    SubjectDataInfo selectSubjectDataInfoByWenId(@Param("wenId" ) String wenId);
+    SubjectDataInfo selectSubjectDataInfoByWenId(@Param("wenId") String wenId,@Param("subjectId")String subjectId);
 }

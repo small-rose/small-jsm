@@ -20,12 +20,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @description: TODO 功能角色说明：
@@ -56,14 +56,9 @@ public class SubjectDataInfoTaskService extends BaseTaskService {
         log.info("专题地址：" +getSubjectUrl());
         for (int i = end; i >= start; i--) {
             String tmpUrl = getSubjectUrl()+i ;
-            document = getSubjectPage(tmpUrl);
+            document = getPage(tmpUrl);
             List<SubjectDataInfo> list2 = parseData(document, subjectId);
             listTotal.addAll(list2);
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
         log.info("========================== TASK GAME OVER ======================================");
         log.info("本次任务扫描到 {} 篇文章！",listTotal.size());
@@ -88,14 +83,19 @@ public class SubjectDataInfoTaskService extends BaseTaskService {
             String userMain = c.select(".nickname").attr("abs:href");
 
 
-            String abstractDesc = c.select(".abstract").text();
-            String commentCount = c.select(".meta > a").get(1).text();
+            //String abstractDesc = c.select(".abstract").text();
+            Elements select = c.select("div.meta > a");
+            System.out.println(select);
+            String commentCount = "0";
+            if (!CollectionUtils.isEmpty(select) && select.size()>=2){
+                commentCount = select.get(1).text();
+            }
 
             System.out.println("=========================================");
             System.out.println("id  = " + noteId);
             System.out.println("title = " + title);
             System.out.println("nickname = " + nickname);
-            System.out.println("abstractDesc = " + abstractDesc);
+           // System.out.println("abstractDesc = " + abstractDesc);
             String commentJson = null ;
             JSONObject responseJson = null ;
             if (!"0".equals(commentCount) ){
@@ -122,7 +122,6 @@ public class SubjectDataInfoTaskService extends BaseTaskService {
             wenStory.setNickName(nickname);
             wenStory.setComments(commentJson);
             wenStory.setRewards(responseJson2.toJSONString());
-
             wenStory.setUserSlug(userMain.substring(userMain.lastIndexOf("/")+1,userMain.length()-1));
             JsUserVO jsUserVO = getReCommender(responseJson);
             if (jsUserVO!=null) {
@@ -134,6 +133,13 @@ public class SubjectDataInfoTaskService extends BaseTaskService {
             wenStory.setSubjectId(subjectId);
             wenStory.setShouTime(new Date());//收录时间
             subjectDataInfoService.saveData(wenStory);
+
+            while(true) {
+                try {
+                    Thread.sleep(1000);
+                    break;
+                } catch(InterruptedException ie) {}
+            }
 
             JUserInfo user = new JUserInfo();
             user.setPrecommender(0l);
@@ -184,10 +190,10 @@ public class SubjectDataInfoTaskService extends BaseTaskService {
             if (b0 || ( b1 && b2 && b3)){
                 System.out.println(" (评论有推荐人)b0 = " + b0 +", (评论人是推荐人)b1 = " +b1 +", (评论喊伯乐、编辑、理事会)b2 = " +b2 +", (评论含推荐)b3 = " +b3 +" , 评论人 ："+commentVO.getUser().getNickname());
                 boolean containsSlug = RECOMMENDER_slug.contains(commentVO.getUser().getSlug());
-                log.info(" containsSlug = "+containsSlug);
+                //log.info(" containsSlug = "+containsSlug);
                 if (!containsSlug){
                     boolean containsName = RECOMMENDER_name.contains(commentVO.getUser().getNickname());
-                    log.info(" containsName = "+containsName);
+                    //log.info(" containsName = "+containsName);
 
                     if (containsName){
                         log.info("名字确认检测出推荐人："+commentVO.getUser().getNickname());

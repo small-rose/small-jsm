@@ -119,6 +119,7 @@
                 detailUrl: prefix + "/detail/{id}",
                 removeUrl: prefix + "/remove",
                 exportUrl: prefix + "/export",
+                sortName: "shouTime",
                 modalName: "专题数据",
                 columns: [{
                     checkbox: true
@@ -160,7 +161,8 @@
                     }
                 }, {
                         field: 'shouTime',
-                        title: '收录时间'
+                        title: '收录时间',
+                        sortable: true
                  },
                  {
                         field: 'updateTime',

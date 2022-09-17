@@ -30,6 +30,17 @@ public class SmallConfig
     /** 获取地址开关 */
     private static boolean addressEnabled;
 
+    /** 邮件接收人 */
+    private static String mailTo;
+
+    public static String getMailTo() {
+        return mailTo;
+    }
+
+    public void setMailTo(String mailTo) {
+        SmallConfig.mailTo = mailTo;
+    }
+
     public static String getName()
     {
         return name;
